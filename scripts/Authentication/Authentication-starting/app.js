@@ -1,11 +1,12 @@
-require ('dotenv').config();
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
-const emailExistence=require("email-existence");
+const emailExistence = require("email-existence");
 const ejs = require("ejs");
 const path = require("path");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const nodemailer = require("nodemailer");
 const saltRounds = 10;
 
 const app = express();
@@ -44,8 +45,6 @@ const viewsPath = path.join(
 );
 
 app.set("views", "./scripts/Authentication/Authentication-starting/views");
-//console.log("Views directory:", viewsPath); // Add this line for debugging
-
 app.set("view engine", "ejs");
 
 app.use(
@@ -53,6 +52,16 @@ app.use(
         extended: true,
     })
 );
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAILPASS,
+    },
+    port: 587,
+    secure: false,
+});
 
 mongoose
     .connect(
@@ -81,51 +90,131 @@ app.get("/register", function (req, res) {
     res.render("register");
 });
 
-app.post("/register", async function (req, res) {
-    const emailValid = req.body.username;
+app.get("/otp", function (req, res) {
+    res.render("otp");
+});
 
-    // Check if the email exists
-    emailExistence.check(emailValid, async function (error, result) {
-        if (error || !result) {
+app.post("/register", async function (req, res) {
+    try {
+        const emailValid = req.body.username;
+
+        // Check if the email exists
+        const result = await new Promise((resolve, reject) => {
+            emailExistence.check(emailValid, (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+
+        if (!result) {
             console.error("Invalid email address or email does not exist:", emailValid);
-            return res.status(404).redirect("register");
+            return res.status(404).render("register", {
+                errorMessage: "Email does not exist. Please enter valid email",
+            });
         }
 
-        // Email exists, proceed with user registration
+        const userExists = await Whiteboard.exists({ email: emailValid });
+
+        if (userExists) {
+            console.error("User with this email already exists:", emailValid);
+            return res.status(409).render("register", {
+                errorMessage: "User with this email already exists",
+            });
+        }
+
+        const otp = generateOTP(6);
+        sendOTP(emailValid, otp);
+
         bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
             if (err) {
                 console.error("Error hashing password:", err);
                 return res.status(500).redirect("register");
             }
-
-            const newUser = new Whiteboard({
-                email: req.body.username,
-                password: hash,
-            });
-
-            newUser
-                .save()
-                .then(function () {
-                    if (server_mode === SERVER_MODES.DEVELOPMENT) {
-                        console.info("Starting server in development mode.");
-                        startFrontendDevServer(8080);
-                        startBackendServer(3000);
-                        return res.redirect("http://localhost:8080");
-                    } else {
-                        console.info("Starting server in production mode.");
-                        startBackendServer(process.env.PORT || 8080);
-                        return res.redirect("http://localhost:8080");
-                    }
-                })
-                .catch(function (err) {
-                    console.log("Error saving user:", err);
-                    return res.status(500).redirect("register");
-                });
+            return res.render("otp", { emailValid, hashedPassword: hash, storedOTP: otp });
         });
-    });
+    } catch (error) {
+        console.error("Error checking email existence:", error);
+        return res
+            .status(500)
+            .render("register", { errorMessage: "Email does not exist. Please enter valid email" });
+    }
 });
 
+app.post("/otp", function (req, res) {
+    const enteredOTP = req.body.otp;
+    const emailValid = req.body.email;
+    const hashedPassword = req.body.hash;
+    const storedOTP = req.body.storedOTP; // Extract stored OTP from request
 
+    // Perform OTP verification
+    const isOTPValid = verifyOTP(enteredOTP, storedOTP);
+
+    if (isOTPValid) {
+        // Continue with user registration
+        const newUser = new Whiteboard({
+            email: emailValid,
+            password: hashedPassword,
+        });
+
+        newUser
+            .save()
+            .then(function () {
+                if (server_mode === SERVER_MODES.DEVELOPMENT) {
+                    console.info("Starting server in development mode.");
+                    startFrontendDevServer(8080);
+                    startBackendServer(3000);
+                    return res.redirect("http://localhost:8080");
+                } else {
+                    console.info("Starting server in production mode.");
+                    startBackendServer(process.env.PORT || 8080);
+                    return res.redirect("http://localhost:8080");
+                }
+            })
+            .catch(function (err) {
+                console.log("Error saving user:", err);
+                return res.status(500).redirect("register");
+            });
+    } else {
+        // Invalid OTP
+        return res.status(401).render("register", { invalidOtp: "Invalid OTP try again...." });
+    }
+});
+
+// Example OTP verification function
+function verifyOTP(enteredOTP, storedOTP) {
+    return enteredOTP === storedOTP;
+}
+
+function generateOTP(length) {
+    const chars = "0123456789";
+    let otp = "";
+    for (let i = 0; i < length; i++) {
+        otp += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return otp;
+}
+
+function sendOTP(email, otp) {
+    // Configure the email options
+    const mailOptions = {
+        from: process.env.EMAIL, // Replace with your email
+        to: email,
+        subject: "Verification Code for Registration",
+        text: `Your verification code is: ${otp}. Use this code to complete your registration.`,
+    };
+
+    // Send the email
+    transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+            console.error("Error sending OTP email:", error);
+        } else {
+            console.log("Email sent: " + info.response);
+        }
+    });
+}
 
 app.post("/login", function (req, res) {
     const username = req.body.username;
@@ -151,14 +240,12 @@ app.post("/login", function (req, res) {
                         }
                     } else {
                         console.log("Incorrect password");
-                        res.status(401).render("login", { error: "Incorrect password" });
-
-                        //res.redirect("/login");
+                        res.status(401).render("login", { userError: "Incorrect password" });
                     }
                 });
             } else {
                 console.log("User not found");
-                res.redirect("/");
+                res.render("home", { userError: "User not found. Register then try again..." });
             }
         })
         .catch(function (err) {

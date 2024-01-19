@@ -1,0 +1,24 @@
+<%- include('partials/header') %>
+<div class="container mt-5">
+  <h1>OTP Verification</h1>
+
+  <div class="row">
+    <div class="col-sm-8">
+      <div class="card">
+        <div class="card-body">
+          <form action="/otp" method="POST">
+            <div class="form-group">
+              <label for="otp">Enter OTP</label>
+              <input type="text" class="form-control" name="otp" />
+            </div>
+            <input type="hidden" name="email" value="<%= emailValid %>" />
+            <input type="hidden" name="hash" value="<%= hashedPassword %>" />
+            <input type="hidden" name="storedOTP" value="<%= storedOTP %>" />
+            <button type="submit" class="btn btn-primary">Submit OTP</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('partials/footer') %>

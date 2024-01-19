@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://githgiub.com/cracker0dks/whiteboard"
+    "url": "https://github.com/mohini402/whiteboard"
   },
   "keywords": [
     "whiteboard",
@@ -46,6 +46,7 @@
     "jsdom": "^16.5.0",
     "jsprim": "^1.4.2",
     "mongoose": "^8.0.3",
+    "nodemailer": "^6.9.8",
     "signature_pad": "^4.0.1",
     "socket.io": "^4.4.1",
     "socket.io-client": "^4.4.0",
