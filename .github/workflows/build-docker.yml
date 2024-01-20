@@ -1,5 +1,30 @@
 # This workflow will do clean build of the docker image
 
+# name: Docker Image CI (also tests build)
+
+# on:
+#   push:
+#     branches: [master]
+#   pull_request:
+#     branches: [master]
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - uses: actions/checkout@v2
+
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v2
+
+#       - name: build the image
+#         run: |
+#           docker buildx build \
+#           --file Dockerfile \
+#           --tag rofl256/whiteboard:$(date +%s) \
+#           --platform linux/amd64,linux/arm64 .
+
 name: Docker Image CI (also tests build)
 
 on:
@@ -10,17 +35,26 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - name: Set up Docker Desktop
+        uses: docker/setup-action@v2
 
       - name: build the image
         run: |
-          docker buildx build \
-          --file Dockerfile \
-          --tag rofl256/whiteboard:$(date +%s) \
-          --platform linux/amd64,linux/arm64 .
+          docker build -t rofl256/whiteboard:$(Get-Date -Format 'yyyyMMddHHmmss') .
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Set up MongoDB (replace with your MongoDB connection string)
+        run: export MONGODB_URI=${{secrets.MONGODB}}
+
+      - name: Set up Email Configurations
+        run: |
+          export EMAIL_SERVICE=gmail
+          export EMAIL_USERNAME=${{secrets.EMAIL}}
+          export EMAIL_PASSWORD=${{secrets.EMAILPASS}}
