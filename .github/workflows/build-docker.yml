@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Set up Docker Desktop
-        uses: docker/setup-action@v2
+        uses: docker/setup-buildx-action@v2
 
       - name: build the image
         run: |
