@@ -52,7 +52,7 @@
     "socket.io-client": "^4.4.0",
     "uuid": "^8.1.0",
     "validator": "^13.11.0",
-    "webdav": "^4.8.0"
+    "webdav": "^5.3.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.16.8",
@@ -85,7 +85,7 @@
     "webpack-dev-server": "^4.7.3",
     "webpack-merge": "^5.8.0"
   },
-  "author": "Cracker0dks",
+  "author": "mohini402",
   "license": "MIT",
   "private": true,
   "browserslist": {
