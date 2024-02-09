@@ -5,7 +5,7 @@ const ReadOnlyBackendService = require("./services/ReadOnlyBackendService");
 const WhiteboardInfoBackendService = require("./services/WhiteboardInfoBackendService");
 const { getSafeFilePath } = require("./utils");
 
-function startBackendServer(port) {
+async function startBackendServer(port) {
     var fs = require("fs-extra");
     var express = require("express");
     var formidable = require("formidable"); //form upload processing
@@ -15,7 +15,8 @@ function startBackendServer(port) {
     const window = new JSDOM("").window;
     const DOMPurify = createDOMPurify(window);
 
-    const { createClient } = require("webdav");
+    //const { createClient } = require("webdav");
+    const { createClient } = await import("webdav");
 
     var s_whiteboard = require("./s_whiteboard.js");
 

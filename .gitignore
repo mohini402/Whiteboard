@@ -73,6 +73,3 @@ typings/
 
 # pnpm
 pnpm-lock.yaml
-Dockerfile
-docker-compose.yml
-LICENSE
