@@ -8,7 +8,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const saltRounds = 10;
-
+const PORT = process.env.PORT || 3030;
 const app = express();
 
 const { getArgs } = require("../..//utils");
@@ -254,5 +254,5 @@ app.post("/login", function (req, res) {
 });
 
 app.listen(3001, function () {
-    console.log("Server started on port 3001");
+     console.log('server started on port '+PORT);
 });
