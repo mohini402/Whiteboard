@@ -170,7 +170,7 @@ app.post("/otp", function (req, res) {
                 } else {
                     console.info("Starting server in production mode.");
                     startBackendServer(process.env.PORT || 8080);
-                    return res.redirect("http://localhost:8080");
+                    res.redirect(`https://whiteboard-z61y.onrender.com`);
                 }
             })
             .catch(function (err) {
@@ -233,10 +233,9 @@ app.post("/login", function (req, res) {
 
                             res.redirect("http://localhost:8080");
                         } else {
-                            console.info("Starting server in production mode.");
-                            startBackendServer(process.env.PORT || 8080);
-
-                            res.redirect("http://localhost:8080");
+                           console.info("Starting server in production mode.");
+                           startBackendServer(process.env.PORT || 8080);
+                           res.redirect(`https://whiteboard-z61y.onrender.com`);
                         }
                     } else {
                         console.log("Incorrect password");
