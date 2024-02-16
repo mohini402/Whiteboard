@@ -231,7 +231,7 @@ app.post("/login", function (req, res) {
                             startFrontendDevServer(8080);
                             startBackendServer(3000);
 
-                            res.redirect("http://localhost:8080");
+                            res.redirect("https://whiteboard-z61y.onrender.com:8080");
                         } else {
                            console.info("Starting server in production mode.");
                            startBackendServer(process.env.PORT || 8080);
