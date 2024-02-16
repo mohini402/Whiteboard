@@ -2,10 +2,14 @@ const devServerConfig = {
     hot: true,
     proxy: {
         // proxies for the backend
-        "/api": "https://whiteboard-z61y.onrender.com:3000",
-        "/uploads": "https://whiteboard-z61y.onrender.com:3000",
+        "/api":{target: "https://whiteboard-z61y.onrender.com:3000",
+        changeOrigin:true
+    },
+        "/uploads":{target: "https://whiteboard-z61y.onrender.com:3000",
+        changeOrigin:true,
+    },
         "/ws-api": {
-            target: "ws://https://whiteboard-z61y.onrender.com:3000",
+            target: "ws://whiteboard-z61y.onrender.com:3000",
             ws: true,
         },
     },
