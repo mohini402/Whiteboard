@@ -9,7 +9,7 @@ const devServerConfig = {
         changeOrigin:true,
     },
         "/ws-api": {
-            target: "ws://whiteboard-z61y.onrender.com:3000",
+            target: "wss://whiteboard-z61y.onrender.com:3000",
             ws: true,
         },
     },
